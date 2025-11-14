@@ -30,13 +30,26 @@ Examples of usage:
 
 ## --- Imports --- ##
 import UI as user
+from datetime import datetime
 
 ## --- Functions --- ##
+def log(func):
+    '''
+    Decorator to log time of function calls in external file.
+    '''
+    def wrapper(*args, **kwargs):
+        with open("log.txt", "a") as log_file:
+            log_file.write(f"{datetime.now()}: Entering function '{func.__name__}'")
+            result = func(*args, **kwargs)
+            log_file.write(f"{datetime.now()}: Exiting function '{func.__name__}'\n")
+        return result
+    return wrapper
+
 
 ## --- Main --- ##
 def main():
     parsed = user.Input()
-    print("Parsed arguments:", parsed.args)
+    
 
 if __name__ == "__main__":
     main()
