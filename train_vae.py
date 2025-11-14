@@ -30,6 +30,7 @@ Examples of usage:
 
 ## --- Imports --- ##
 import UI as user
+import Data_handler
 from datetime import datetime
 
 ## --- Constants --- ##
@@ -48,9 +49,25 @@ def log(func):
         return result
     return wrapper
 
+@log
+def get_data(choice:str):
+    '''
+    Function to get data based on user input.
+
+    @param choice: dataset choice from user input.
+    @return: DataLoader object with the selected dataset.
+    '''
+    if choice == "mnist_bw":
+        dataloader = Data_handler.BlackWhite()
+    else: # No other options due to argparse choices
+        dataloader = Data_handler.Color()
+    return dataloader
+
 ## --- Main --- ##
 def main():
     parsed = user.Input(LOGFILE)
+    data = get_data(parsed.args.dset)
+    print(f"Shape of 1D array: {data.test.shape}")
 
 if __name__ == "__main__":
     main()
