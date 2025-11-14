@@ -15,8 +15,15 @@ class Input:
     ---
     Main use is to extract the *args* property which holds the parsed arguments.
     '''
-    def __init__(self, is_test=False):
+    def __init__(self, logfile:str, is_test=False):
+        '''
+        Constructor for Input class.
+
+        @param logfile:str: standard name of logfile
+        @param is_test: flag to indicate if in test mode
+        '''        
         self._is_test = is_test
+        self._logfile = logfile
         self._parser = self._get_parser()
         if not is_test:
             self._args = self._parser.parse_args()
@@ -122,7 +129,9 @@ class Input:
     def _clean_log_warning(self):
         # Handle clean_log logic
         if self._args.clean_log:
-            if not os.path.exists("training.log"):
-                print("No file to clean, a new file will be created.")
+            if not os.path.exists(self._logfile):
+                print("No file to clean, a new file will be created instead.")
             else:
-                print("Log file will be overwritten.")
+                print("Log file being overwritten.")
+                with open(self._logfile, "w") as log_file:
+                    log_file.write("")  # Overwrite the file with empty content

@@ -1,7 +1,7 @@
 import pytest
 from UI import Input
 
-parser = Input(True)  # Initialize Input in test mode
+parser = Input("log.txt",True)  # Initialize Input in test mode
 
 def test_valid_mnist_bw():
     parser.args = ["train_vae.py", "mnist_bw", "10", "--visualize_latent"]

@@ -32,24 +32,33 @@ Examples of usage:
 import UI as user
 from datetime import datetime
 
+## --- Constants --- ##
+LOGFILE = "log.txt"
+
 ## --- Functions --- ##
 def log(func):
     '''
     Decorator to log time of function calls in external file.
     '''
     def wrapper(*args, **kwargs):
-        with open("log.txt", "a") as log_file:
-            log_file.write(f"{datetime.now()}: Entering function '{func.__name__}'")
+        with open(LOGFILE, "a") as log_file:
+            log_file.write(f"{datetime.now()}: Entering '{func.__name__}' ::: ")
             result = func(*args, **kwargs)
-            log_file.write(f"{datetime.now()}: Exiting function '{func.__name__}'\n")
+            log_file.write(f"Exiting '{func.__name__}': {datetime.now()}\n")
         return result
     return wrapper
 
+@log
+def dummy_logtest():
+    print("This is a dummy function to test logging.")
 
 ## --- Main --- ##
 def main():
-    parsed = user.Input()
-    
+    parsed = user.Input(LOGFILE)
+    dummy_logtest()
+
+    for i in range(parsed.args.epochs):
+        dummy_logtest()
 
 if __name__ == "__main__":
     main()
