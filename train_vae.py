@@ -48,17 +48,9 @@ def log(func):
         return result
     return wrapper
 
-@log
-def dummy_logtest():
-    print("This is a dummy function to test logging.")
-
 ## --- Main --- ##
 def main():
     parsed = user.Input(LOGFILE)
-    dummy_logtest()
-
-    for i in range(parsed.args.epochs):
-        dummy_logtest()
 
 if __name__ == "__main__":
     main()
