@@ -7,6 +7,7 @@ import requests
 import numpy as np
 import io
 import sys
+import tensorflow as tf
 
 class DataLoader:
     '''
@@ -24,10 +25,6 @@ class DataLoader:
     @property
     def test(self):
         return self._test
-    
-    @property
-    def labels(self):
-        return self._labels
 
     def _download_from_internet(self, urls:dict):
         '''
@@ -94,6 +91,18 @@ class DataLoader:
         else:
             return url + "?dl=1"
         
+    def _slice(self, features: np.ndarray, labels: np.ndarray):
+        '''
+        Slices features and labels into training and testing sets.
+
+        @param features: numpy array of features
+        @param labels: numpy array of labels
+        @return: Processed data in a tf.data.Dataset.from_tensor_slices() data format
+        '''
+        # print(features.shape, labels.shape) ##### droping the lables until I figure out how to use them
+        # return tf.data.Dataset.from_tensor_slices((features, labels))
+        return tf.data.Dataset.from_tensor_slices(features)
+        
 
 class BlackWhite(DataLoader):
     def __init__(self):
@@ -102,6 +111,8 @@ class BlackWhite(DataLoader):
         '''
         super().__init__()
         self._train, self._test, self._labels = self._load_data()
+        self._train = super()._slice(self._preprocess_data(self._train), self._labels)
+        self._test = super()._slice(self._preprocess_data(self._test), self._labels)
 
     def _load_data(self):
         '''
@@ -113,6 +124,20 @@ class BlackWhite(DataLoader):
             "labels" : 'https://www.dropbox.com/scl/fi/8kmcsy9otcxg8dbi5cqd4/mnist_bw_y_te.npy?rlkey=atou1x07fnna5sgu6vrrgt9j1&st=m05mfkwb&dl=0'
         }
         return super()._download_from_internet(urls)
+    
+    def _preprocess_data(self, data: np.ndarray):
+        '''
+        Preprocess a batch of images:
+        - Normalize pixel values from [0, 255] to [0, 1].
+        - Flatten each image from (28, 28) to (784,).
+        
+        @param data: numpy array of shape (num_images, 28, 28)
+        @return: numpy array of shape (num_images, 784) with normalized pixel values.
+        '''
+        data = data.astype(np.float32) / 255.0  # Normalize to [0, 1]
+        num_images = data.shape[0]
+        data = data.reshape((num_images, -1))   # Flatten to (num_images, 28*28=784)
+        return data
 
 
 class Color(DataLoader):   
@@ -126,8 +151,8 @@ class Color(DataLoader):
         '''
         super().__init__()
         self._train, self._test, self._labels = self._load_data()
-        self._train = self._train[self._dataset_keys[version-1]]
-        self._test = self._test[self._dataset_keys[version-1]]
+        self._train = super()._slice(self._train[self._dataset_keys[version-1]], self._labels)
+        self._test = super()._slice(self._test[self._dataset_keys[version-1]], self._labels)
 
     def _load_data(self):
         '''
@@ -143,7 +168,9 @@ class Color(DataLoader):
 class CustomURL(DataLoader): #Maybe useful for testing
     def __init__(self, **kwargs):
         '''
+        EXPERIMENTAL
         DataLoader subclass for loading datasets from custom URLs.
+
         @param kwargs: dictionary with keys 'train', 'test', 'labels' and their corresponding URLs.
         '''        
         super().__init__()
@@ -154,6 +181,8 @@ class CustomURL(DataLoader): #Maybe useful for testing
             urls = kwargs[key]
 
         self._train, self._test, self._labels = self._load_data(urls)
+        self._train = super()._slice(self._train, self._labels)
+        self._test = super()._slice(self._test, self._labels)
     
     def _load_data(self, urls: dict):
         '''

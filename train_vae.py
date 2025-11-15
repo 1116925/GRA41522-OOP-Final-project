@@ -70,7 +70,6 @@ def main():
     parsed = user.Input(LOGFILE)
     print("Valide argument, inicializing program...")
     data = get_data(parsed.args.dset)
-    print(f"Shape of 1D array: {data.test.shape}")
 
 if __name__ == "__main__":
     main()
