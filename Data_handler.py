@@ -44,7 +44,7 @@ class DataLoader:
             response = requests.get(url)
             self._errorhandler(response)  # ensure download worked
             try:
-                datasets[key] = np.load(io.BytesIO(response.content)) # Dump data into memory then load to numpy array
+                datasets[key] = np.load(io.BytesIO(response.content)) # Dump data into memory then unzip and load to NpzFile or ndarray
             except ValueError:
                 # If .npy loading fails, try loading as pickle (for .pkl files)
                 print(f"Warning: {url} is pickled, and may be harmful", file=sys.stderr)
@@ -96,10 +96,10 @@ class DataLoader:
         
 
 class BlackWhite(DataLoader):
-    '''
-    DataLoader subclass for loading the black and white dataset.
-    '''
     def __init__(self):
+        '''
+        DataLoader subclass for loading the black and white dataset.
+        '''
         super().__init__()
         self._train, self._test, self._labels = self._load_data()
 
@@ -116,12 +116,18 @@ class BlackWhite(DataLoader):
 
 
 class Color(DataLoader):   
-    '''
-    DataLoader subclass for loading the color dataset.
-    '''
-    def __init__(self):
+    _dataset_keys = ['m0', 'm1', 'm2', 'm3', 'm4']
+
+    def __init__(self, version:int):
+        '''
+        DataLoader subclass for loading the color dataset
+
+        @param version: keyword to select specific color dataset variant *m0, m1, m2, m3, m4*.
+        '''
         super().__init__()
         self._train, self._test, self._labels = self._load_data()
+        self._train = self._train[self._dataset_keys[version-1]]
+        self._test = self._test[self._dataset_keys[version-1]]
 
     def _load_data(self):
         '''
@@ -135,10 +141,11 @@ class Color(DataLoader):
         return super()._download_from_internet(urls)
     
 class CustomURL(DataLoader): #Maybe useful for testing
-    '''
-    DataLoader subclass for loading datasets from custom URLs.
-    '''
     def __init__(self, **kwargs):
+        '''
+        DataLoader subclass for loading datasets from custom URLs.
+        @param kwargs: dictionary with keys 'train', 'test', 'labels' and their corresponding URLs.
+        '''        
         super().__init__()
 
         for key in ["train", "test", "labels"]:

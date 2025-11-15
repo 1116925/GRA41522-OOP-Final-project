@@ -19,6 +19,8 @@ options:
   --generate_form_posterior
                         Generate a new image from the posterior distribution q(z|x).
   --clean_log           Overwrite the current log file. If no log file exists, prints a message.
+  --color_version {1,2,3,4,5}
+                        chosen color dataset variant (1 to 5). Only relevant if "mnist_color" is chosen as dataset.
   --custom_params CUSTOM_PARAMS
                         Custom parameters for the VAE model IN DEVELOPMENT
 
@@ -50,7 +52,7 @@ def log(func):
     return wrapper
 
 @log
-def get_data(choice:str):
+def get_data(choice:str, color_version = 1):
     '''
     Function to get data based on user input.
 
@@ -60,7 +62,7 @@ def get_data(choice:str):
     if choice == "mnist_bw":
         dataloader = Data_handler.BlackWhite()
     else: # No other options due to argparse choices
-        dataloader = Data_handler.Color()
+        dataloader = Data_handler.Color(color_version)
     return dataloader
 
 ## --- Main --- ##
