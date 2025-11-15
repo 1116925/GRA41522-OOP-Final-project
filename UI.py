@@ -9,15 +9,12 @@ import sys
 from unittest.mock import patch
 
 class Input:
-    '''
-    Interfaces the command line inputs and the training machine.
-
-    ---
-    Main use is to extract the *args* property which holds the parsed arguments.
-    '''
     def __init__(self, logfile:str, is_test=False):
         '''
-        Constructor for Input class.
+        Interfaces the command line inputs and the training machine.
+
+        ---
+        Main use is to extract the *args* property which holds the parsed arguments.
 
         @param logfile:str: standard name of logfile
         @param is_test: flag to indicate if in test mode
@@ -117,7 +114,14 @@ class Input:
             help="Overwrite the current log file. If no log file exists, prints a message."
         )
 
-        # 7. Optional custom_params
+        # 7. Mandatory dataset choice
+        parser.add_argument(
+            "--color_version",
+            choices=[1, 2, 3, 4, 5],
+            help='chosen color dataset variant (1 to 5). Only relevant if "mnist_color" is chosen as dataset.'
+        )        
+
+        # 8. Optional custom_params
         parser.add_argument(
             "--custom_params", # IN DEVELOPMENT
             type=str,

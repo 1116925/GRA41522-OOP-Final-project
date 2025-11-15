@@ -19,6 +19,8 @@ options:
   --generate_form_posterior
                         Generate a new image from the posterior distribution q(z|x).
   --clean_log           Overwrite the current log file. If no log file exists, prints a message.
+  --color_version {1,2,3,4,5}
+                        chosen color dataset variant (1 to 5). Only relevant if "mnist_color" is chosen as dataset.
   --custom_params CUSTOM_PARAMS
                         Custom parameters for the VAE model IN DEVELOPMENT
 
@@ -30,6 +32,7 @@ Examples of usage:
 
 ## --- Imports --- ##
 import UI as user
+import Data_handler
 from datetime import datetime
 
 ## --- Constants --- ##
@@ -49,16 +52,26 @@ def log(func):
     return wrapper
 
 @log
-def dummy_logtest():
-    print("This is a dummy function to test logging.")
+def get_data(choice:str, color_version = 1):
+    '''
+    Function to get data based on user input.
+
+    @param choice: dataset choice from user input.
+    @return: DataLoader object with the selected dataset.
+    '''
+    if choice == "mnist_bw":
+        dataloader = Data_handler.BlackWhite()
+    else: # No other options due to argparse choices
+        dataloader = Data_handler.Color(color_version)
+    return dataloader
 
 ## --- Main --- ##
 def main():
     parsed = user.Input(LOGFILE)
-    dummy_logtest()
-
-    for i in range(parsed.args.epochs):
-        dummy_logtest()
+    print("Valide argument, inicializing program...")
+    data = get_data(parsed.args.dset)
+    first_batch = next(iter(data.train))
+    print(first_batch.shape[-1])
 
 if __name__ == "__main__":
     main()
