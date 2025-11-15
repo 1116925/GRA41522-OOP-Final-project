@@ -178,9 +178,8 @@ class CustomURL(DataLoader): #Maybe useful for testing
         for key in ["train", "test", "labels"]:
             if key not in kwargs:
                 raise ValueError(f"Missing required URL for '{key}' dataset.")
-            urls = kwargs[key]
 
-        self._train, self._test, self._labels = self._load_data(urls)
+        self._train, self._test, self._labels = self._load_data(kwargs)
         self._train = super()._slice(self._train, self._labels)
         self._test = super()._slice(self._test, self._labels)
     

@@ -70,6 +70,8 @@ def main():
     parsed = user.Input(LOGFILE)
     print("Valide argument, inicializing program...")
     data = get_data(parsed.args.dset)
+    first_batch = next(iter(data.train))
+    print(first_batch.shape[-1])
 
 if __name__ == "__main__":
     main()
