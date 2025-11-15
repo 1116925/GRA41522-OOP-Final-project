@@ -66,6 +66,7 @@ def get_data(choice:str):
 ## --- Main --- ##
 def main():
     parsed = user.Input(LOGFILE)
+    print("Valide argument, inicializing program...")
     data = get_data(parsed.args.dset)
     print(f"Shape of 1D array: {data.test.shape}")
 
