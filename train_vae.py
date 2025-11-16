@@ -33,7 +33,9 @@ Examples of usage:
 ## --- Imports --- ##
 import UI as user
 import Data_handler
+import GeneratorMachine
 from datetime import datetime
+import tensorflow as tf
 
 ## --- Constants --- ##
 LOGFILE = "log.txt"
@@ -65,13 +67,26 @@ def get_data(choice:str, color_version = 1):
         dataloader = Data_handler.Color(color_version)
     return dataloader
 
+@log
+def get_vae_model(choice:str):
+    '''
+    Function to get VAE model based on user input.
+
+    @param choice: dataset choice from user input.
+    @return: VAE model object.
+    '''
+    return GeneratorMachine.VAE(choice)
+
 ## --- Main --- ##
 def main():
     parsed = user.Input(LOGFILE)
     print("Valide argument, inicializing program...")
     data = get_data(parsed.args.dset)
-    first_batch = next(iter(data.train))
-    print(first_batch.shape[-1])
+    model = get_vae_model(parsed.args.dset)
+    # Adam optimizer is my default choice 
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4) 
+    for e in range(parsed.args.epochs):
+        for i, tr_batch in enumerate(data.train): loss = model.train(tr_batch , optimizer)
 
 if __name__ == "__main__":
-    main()
+    main()  
