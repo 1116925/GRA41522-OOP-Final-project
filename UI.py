@@ -75,8 +75,8 @@ class Input:
         # 1. Mandatory dataset choice
         parser.add_argument(
             "dset",
-            choices=["mnist_bw", "mnist_color"],
-            help='Dataset to train the VAE on. Choices: "mnist_bw" (grayscale MNIST), "mnist_color" (colored MNIST).'
+            choices=["mnist_bw", "mnist_color", "DUMMY"],   
+            help='Dataset to train the VAE on. Choices: "mnist_bw" (grayscale MNIST), "mnist_color" (colored MNIST), "DUMMY" for some small dummy data.'
         )
 
         # 2. Mandatory epochs

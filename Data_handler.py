@@ -165,23 +165,18 @@ class Color(DataLoader):
         }
         return super()._download_from_internet(urls)
     
-class CustomURL(DataLoader): #Maybe useful for testing
-    def __init__(self, **kwargs):
+class Dummytestdata(BlackWhite): #Maybe useful for testing
+    def __init__(self):
         '''
         EXPERIMENTAL
-        DataLoader subclass for loading datasets from custom URLs.
-
-        @param kwargs: dictionary with keys 'train', 'test', 'labels' and their corresponding URLs.
+        DataLoader subclass for loading fake datasets
         '''        
         super().__init__()
-
-        for key in ["train", "test", "labels"]:
-            if key not in kwargs:
-                raise ValueError(f"Missing required URL for '{key}' dataset.")
-
-        self._train, self._test, self._labels = self._load_data(kwargs)
-        self._train = super()._slice(self._train, self._labels)
-        self._test = super()._slice(self._test, self._labels)
+        self._train = np.random.randint(0, 255, (600, 28, 28), dtype=np.uint8)
+        self._test = np.random.randint(0, 255, (100, 28, 28), dtype=np.uint8)
+        self._labels = np.arange(3)
+        self._train = super()._slice(super()._preprocess_data(self._train), self._labels)
+        self._test = super()._slice(super()._preprocess_data(self._test), self._labels)
     
     def _load_data(self, urls: dict):
         '''

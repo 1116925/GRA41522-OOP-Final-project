@@ -31,11 +31,13 @@ Examples of usage:
 '''
 
 ## --- Imports --- ##
+import numpy as np
+import tensorflow as tf
 import UI as user
 import Data_handler
 import GeneratorMachine
 from datetime import datetime
-import tensorflow as tf
+
 
 ## --- Constants --- ##
 LOGFILE = "log.txt"
@@ -63,8 +65,10 @@ def get_data(choice:str, color_version = 1):
     '''
     if choice == "mnist_bw":
         dataloader = Data_handler.BlackWhite()
-    else: # No other options due to argparse choices
+    elif choice == "mnist_color": 
         dataloader = Data_handler.Color(color_version)
+    elif choice == "DUMMY":
+        dataloader = Data_handler.Dummytestdata()
     return dataloader
 
 @log
@@ -77,6 +81,25 @@ def get_vae_model(choice:str):
     '''
     return GeneratorMachine.VAE(choice)
 
+@log
+def visualize_latent_space(model):
+    model.visualize_latent_space()
+    
+@log
+def generate_from_posterior(model):
+    model.generate_from_posterior()
+
+@log
+def generate_from_prior(model):
+    model.generate_from_prior()
+
+@log
+def train_vae(model, data, epochs:int, optimizer):
+    for e in range(epochs):
+        for i, tr_batch in enumerate(data.train):
+            loss = model.train(tr_batch , optimizer)
+    return model
+
 ## --- Main --- ##
 def main():
     parsed = user.Input(LOGFILE)
@@ -85,8 +108,14 @@ def main():
     model = get_vae_model(parsed.args.dset)
     # Adam optimizer is my default choice 
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4) 
-    for e in range(parsed.args.epochs):
-        for i, tr_batch in enumerate(data.train): loss = model.train(tr_batch , optimizer)
+    train_vae(model, data, parsed.args.epochs, optimizer)
+
+    if parsed.args.visualize_latent:
+        model.visualize_latent_space()
+    if parsed.args.generate_form_posterior:
+        model.generate_from_posterior()
+    if parsed.args.generate_form_prior:
+        model.generate_from_prior()
 
 if __name__ == "__main__":
     main()  

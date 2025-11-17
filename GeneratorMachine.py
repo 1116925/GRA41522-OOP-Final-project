@@ -13,13 +13,15 @@ class VAE(tf.keras.Model):
         @param dataset: dataset choice, either "mnist_bw" or "mnist_color"
         '''
         super().__init__() # inherit whatever from tf.keras.Model
-        if dataset == "mnist_bw":
-            self.encoder = BW_enconder()
-            self.decoder = BW_decoder()
-        else: # No other options due to argparse choices
+        if dataset == "mnist_color":
+            self._iscolor = True
             self.encoder = Color_enconder()
             self.decoder = Color_decoder()
-            
+        else: # Should be the same for dummy and mnist_bw
+            self._iscolor = False
+            self.encoder = BW_enconder()
+            self.decoder = BW_decoder()
+
     @tf.function
     def call(self, x):
         self._X = x
@@ -77,8 +79,66 @@ class VAE(tf.keras.Model):
         plt.savefig('./xhat_bw_'+name+'.pdf')
         plt.close()
 
+    def visualize_latent_space(self):
+        '''
+        Visualize the latent space by generating images from a grid of latent vectors.
+        '''
+        n = 20  # figure with 20x20 digits
+        digit_size = 28
+        if self._iscolor:
+            digit_size = 28
+            channel = 3
+        else:
+            digit_size = 28
+            channel = 1
+        # Linearly spaced coordinates on the unit square were transformed through the inverse CDF (ppf) of the Gaussian
+        # to produce values of the latent variables z, since the prior of the latent space is Gaussian
+        grid_x = np.linspace(-4, 4, n)
+        grid_y = np.linspace(-4, 4, n)[::-1]
 
-class bicoder(tf.keras.Model):
+        latent_vectors = []
+        for i, yi in enumerate(grid_y):
+            for j, xi in enumerate(grid_x):
+                z_sample = np.array([[xi, yi]] * 1)  # batch size of 1
+                latent_vectors.append(z_sample)
+        latent_vectors = np.concatenate(latent_vectors, axis=0)
+        x_decoded = self.decoder(tf.convert_to_tensor(latent_vectors, dtype=tf.float32))
+        if channel == 1:
+            x_decoded = x_decoded.numpy().reshape((n * n, digit_size, digit_size))
+        else:
+            x_decoded = x_decoded.numpy().reshape((n * n, digit_size, digit_size, channel))
+        self.plot_grid(x_decoded, N=n, C=channel, name='latent_space')
+
+    def generate_from_posterior(self, num_samples=100):
+        '''
+        Generate images from the posterior distribution q(z|x) using random samples from the test set.
+        '''
+        # Randomly sample num_samples images from the test set
+        idx = np.random.choice(self._X.shape[0], num_samples, replace=False)
+        x_samples = tf.gather(self._X, idx)
+        z_samples = self.encoder(x_samples)
+        x_decoded = self.decoder(z_samples)
+        if self._iscolor:
+            x_decoded = x_decoded.numpy().reshape((num_samples, 28, 28, 3))
+        else:
+            x_decoded = x_decoded.numpy().reshape((num_samples, 28, 28))
+        self.plot_grid(x_decoded, N=10, C=3 if self._iscolor else 1, name='posterior')
+    
+    def generate_from_prior(self, num_samples=100):
+        '''
+        Generate images from the prior distribution p(z) using random samples from a standard normal distribution.
+        '''
+        latent_dim = self.encoder.latent_dim
+        z_samples = tf.random.normal((num_samples, latent_dim))
+        x_decoded = self.decoder(z_samples)
+        if self._iscolor:
+            x_decoded = x_decoded.numpy().reshape((num_samples, 28, 28, 3))
+        else:
+            x_decoded = x_decoded.numpy().reshape((num_samples, 28, 28))
+        self.plot_grid(x_decoded, N=10, C=3 if self._iscolor else 1, name='prior')
+
+
+class bicoder(layers.Layer):
     '''
     A superclass for the enconder and decoder neural networks.
     '''
