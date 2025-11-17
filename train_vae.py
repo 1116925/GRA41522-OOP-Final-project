@@ -7,8 +7,9 @@ The following documentation is also provided when running the script from the te
 Train a Variational Autoencoder (VAE) with configurable options.
 
 positional arguments:
-  {mnist_bw,mnist_color}
-                        Dataset to train the VAE on. Choices: "mnist_bw" (grayscale MNIST), "mnist_color" (colored MNIST).
+  {mnist_bw,mnist_color,DUMMY}
+                        Dataset to train the VAE on. Choices: "mnist_bw" (grayscale MNIST),
+                        "mnist_color" (colored MNIST), "DUMMY" for some small dummy data.
   epochs                Number of training epochs (positive integer).
 
 options:
@@ -82,12 +83,12 @@ def get_vae_model(choice:str):
     return GeneratorMachine.VAE(choice)
 
 @log
-def visualize_latent_space(model):
-    model.visualize_latent_space()
+def visualize_latent_space(model, test_data):
+    model.visualize_latent_space(test_data)
     
 @log
-def generate_from_posterior(model):
-    model.generate_from_posterior()
+def generate_from_posterior(model,test_data):
+    model.generate_from_posterior(test_data)
 
 @log
 def generate_from_prior(model):
@@ -111,11 +112,11 @@ def main():
     train_vae(model, data, parsed.args.epochs, optimizer)
 
     if parsed.args.visualize_latent:
-        model.visualize_latent_space()
+        visualize_latent_space(model, data.test)
     if parsed.args.generate_form_posterior:
-        model.generate_from_posterior()
+        generate_from_posterior(model, data.test)
     if parsed.args.generate_form_prior:
-        model.generate_from_prior()
+        generate_from_prior(model)
 
 if __name__ == "__main__":
     main()  

@@ -15,8 +15,7 @@ class DataLoader:
     available to the ML model.
     '''
     def __init__(self):
-        pass
-        # Maybe something will go here
+        self._batch_size = 2000  # Default batch size
 
     @property
     def train(self):
@@ -101,7 +100,7 @@ class DataLoader:
         '''
         # print(features.shape, labels.shape) ##### droping the lables until I figure out how to use them
         # return tf.data.Dataset.from_tensor_slices((features, labels))
-        return tf.data.Dataset.from_tensor_slices(features)
+        return tf.data.Dataset.from_tensor_slices(features).batch(self._batch_size)
         
 
 class BlackWhite(DataLoader):
@@ -112,7 +111,7 @@ class BlackWhite(DataLoader):
         super().__init__()
         self._train, self._test, self._labels = self._load_data()
         self._train = super()._slice(self._preprocess_data(self._train), self._labels)
-        self._test = super()._slice(self._preprocess_data(self._test), self._labels)
+        self._test = self._preprocess_data(self._test)
 
     def _load_data(self):
         '''
@@ -152,7 +151,7 @@ class Color(DataLoader):
         super().__init__()
         self._train, self._test, self._labels = self._load_data()
         self._train = super()._slice(self._train[self._dataset_keys[version-1]], self._labels)
-        self._test = super()._slice(self._test[self._dataset_keys[version-1]], self._labels)
+        self._test = self._test[self._dataset_keys[version-1]]
 
     def _load_data(self):
         '''
@@ -171,15 +170,10 @@ class Dummytestdata(BlackWhite): #Maybe useful for testing
         EXPERIMENTAL
         DataLoader subclass for loading fake datasets
         '''        
-        super().__init__()
-        self._train = np.random.randint(0, 255, (600, 28, 28), dtype=np.uint8)
-        self._test = np.random.randint(0, 255, (100, 28, 28), dtype=np.uint8)
+        self._batch_size = 20
+        self._train = np.random.randint(0, 255, (8000, 28, 28), dtype=np.uint8)
+        self._test = np.random.randint(0, 255, (2000, 28, 28), dtype=np.uint8)
         self._labels = np.arange(3)
         self._train = super()._slice(super()._preprocess_data(self._train), self._labels)
-        self._test = super()._slice(super()._preprocess_data(self._test), self._labels)
-    
-    def _load_data(self, urls: dict):
-        '''
-        Loads dataset from custom URLs.
-        '''
-        return super()._download_from_internet(urls)
+        self._test = super()._preprocess_data(self._test)
+       # self._test = tf.data.Dataset.from_tensor_slices(super()._preprocess_data(self._test))
